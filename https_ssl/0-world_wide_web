@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Displays DNS A record info for subdomains of a given domain using dig and awk
+
+show_subdomain_info() {
+    local domain="$1"
+    local sub="$2"
+    local result
+    result=$(dig "$sub.$domain" | awk '/^;; ANSWER SECTION:/{getline; print $4, $5}')
+    local record_type
+    local destination
+    record_type=$(echo "$result" | awk '{print $1}')
+    destination=$(echo "$result" | awk '{print $2}')
+    echo "The subdomain $sub is a $record_type record and points to $destination"
+}
+
+DOMAIN="$1"
+SUBDOMAIN="$2"
+
+if [ -n "$SUBDOMAIN" ]; then
+    show_subdomain_info "$DOMAIN" "$SUBDOMAIN"
+else
+    for sub in www lb-01 web-01 web-02; do
+        show_subdomain_info "$DOMAIN" "$sub"
+    done
+fi
